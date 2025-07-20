@@ -16,8 +16,21 @@ const authenticatedUser = (username, password) => { //returns boolean
 
 //only registered users can login
 regd_users.post("/login", (req, res) => {
-  //Write your code here
-  return res.status(300).json({ message: "Yet to be implemented" });
+  const { username, password } = req.body;
+
+  if (!authenticatedUser(username, password)) {
+    return res.status(401).json({ message: "Bad username or password" });
+  }
+
+  const payload = { username };
+  const secret = process.env.JWT_SECRET || "secret";
+
+  const token = jwt.sign(payload, secret, {
+    expiresIn: "1h",
+    issuer: "localhost"
+  });
+
+  return res.status(200).json({ token });
 });
 
 // Add a book review
