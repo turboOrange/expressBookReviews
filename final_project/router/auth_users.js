@@ -53,6 +53,24 @@ regd_users.put("/review/:isbn", (req, res) => {
   return res.status(200).json({ message: "Review added or updated" });
 });
 
+regd_users.delete("/review/:isbn", (req, res) => {
+  const token = req.body.token;
+  const isbn = req.params.isbn;
+  if (!token) { return res.status(400).json({ message: "Missing token" }); }
+  let username;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+    username = decoded.username;
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+  if (!isbn) { return res.status(400).json({ message: "No ISBN provided" }); }
+  if (!books[isbn]) { return res.status(404).json({ message: "Book not found" }); }
+  delete books[isbn].reviews[username];
+  return res.status(200).json({ message: "Review deleted" });
+});
+
+
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
 module.exports.users = users;
